@@ -1,0 +1,29 @@
+# ═══════════════════ VATAN TUYG'USI — boshlanish ═══════════════════
+# Bu blok `ornat.sh` tomonidan qo'shilgan. Qo'lda tahrirlash mumkin.
+# Butunlay olib tashlash uchun:  bash olib-tashla.sh
+# Ikkala marker qatorini ham saqlang — skript ular bo'yicha topadi.
+
+__FRONT_DOMEN__ {
+	encode zstd gzip
+	header {
+		-Server
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "SAMEORIGIN"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Strict-Transport-Security "max-age=31536000"
+	}
+	reverse_proxy vatan-front:80
+}
+
+__API_DOMEN__ {
+	encode zstd gzip
+	header {
+		-Server
+		X-Content-Type-Options "nosniff"
+		Strict-Transport-Security "max-age=31536000"
+	}
+	# CORS sarlavhalarini Flask beradi — bu yerda TAKRORLANMAYDI.
+	# Ikkita Access-Control-Allow-Origin bo'lsa brauzer ikkalasini rad etadi.
+	reverse_proxy vatan-api:5057
+}
+# ═══════════════════ VATAN TUYG'USI — tugadi ═══════════════════

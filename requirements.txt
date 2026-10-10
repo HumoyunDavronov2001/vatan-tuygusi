@@ -1,0 +1,22 @@
+# Majburiy
+flask>=3.0
+yt-dlp>=2024.1.0
+
+# ffmpeg ni o'zi bilan olib keladi — `sudo apt install ffmpeg` shart emas.
+# Tizimda ffmpeg bo'lsa, o'sha ustunlik qiladi.
+imageio-ffmpeg>=0.5
+
+# Ovoz tahlili. Bo'lmasa dastur ishlaydi, faqat kadr + caption bo'yicha
+# baholaydi va buni natijada ochiq yozadi.
+faster-whisper>=1.0
+
+# socks5 proksi (server data-markaz IP'si bloklanganda WARP proksisi orqali
+# yuklash uchun SHART — busiz VATAN_PROXY=socks5://... ishlamaydi).
+PySocks>=1.7
+
+# Kadr rang tahlili (qoidaviy backend — bayroq ranglarini aniqlash).
+Pillow>=10.0
+
+# IXTIYORIY — faqat VATAN_BACKEND=claude bo'lsa kerak (tashqi API).
+# Standart "qoida" backend'da umuman ishlatilmaydi.
+anthropic>=1.0

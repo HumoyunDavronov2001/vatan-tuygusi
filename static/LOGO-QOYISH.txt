@@ -1,0 +1,12 @@
+TASHKILOT LOGOTIPI
+==================
+
+Header'da logotip ko'rinishi uchun tashkilot emblemasini shu papkaga
+"logo.png" nomi bilan saqlang:
+
+    static/logo.png
+
+Tavsiya: PNG (shaffof fon) yoki SVG, kamida 200x200 px, kvadrat.
+
+Fayl bo'lmasa header faqat "VATAN TUYG'USI" yozuvini ko'rsatadi
+(xato bermaydi — onerror bilan yashiriladi).

@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="360" viewBox="0 0 1280 360" role="img" aria-label="VATAN TUYG'USI — video tahlili va portret">
+  <defs>
+    <linearGradient id="fon" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#06232b"/>
+      <stop offset="1" stop-color="#0d4f5c"/>
+    </linearGradient>
+    <linearGradient id="nur" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#7fe3f2" stop-opacity="0"/>
+      <stop offset=".5" stop-color="#7fe3f2" stop-opacity=".9"/>
+      <stop offset="1" stop-color="#7fe3f2" stop-opacity="0"/>
+    </linearGradient>
+    <pattern id="gil" width="28" height="28" patternUnits="userSpaceOnUse">
+      <path d="M0 14 Q7 0 14 14 T28 14" fill="none" stroke="#12505c" stroke-width="1"/>
+      <path d="M0 28 Q7 14 14 28 T28 28" fill="none" stroke="#0f4550" stroke-width="1"/>
+    </pattern>
+    <clipPath id="kadr"><rect x="0" y="0" width="300" height="168" rx="10"/></clipPath>
+    <style>
+      .sarlavha{font:700 52px Georgia,'Times New Roman',serif;fill:#f8fafc;letter-spacing:6px}
+      .izoh{font:500 21px 'Segoe UI',Inter,Roboto,Helvetica,Arial,sans-serif;fill:#a8d5dd}
+      .teg{font:600 15px 'Segoe UI',Inter,Roboto,Helvetica,Arial,sans-serif;fill:#dff3f6}
+      .kich{font:700 11px 'Segoe UI',Inter,Roboto,Helvetica,Arial,sans-serif;letter-spacing:1px}
+      .ball{font:800 34px Georgia,'Times New Roman',serif}
+    </style>
+  </defs>
+  <rect width="1280" height="360" fill="url(#fon)"/>
+  <rect width="1280" height="360" fill="url(#gil)" opacity=".55"/>
+  <rect width="1280" height="5" fill="#0099b5"/>
+  <rect y="5" width="1280" height="2" fill="#ce1126"/>
+
+  <g transform="translate(64 0)">
+    <path d="M28 70 L52 80 V100 C52 114 41 124 28 130 C15 124 4 114 4 100 V80 Z" fill="none" stroke="#7fe3f2" stroke-width="3"/>
+    <path d="M17 99 L26 108 L40 91" fill="none" stroke="#7fe3f2" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <text class="sarlavha" x="0" y="196">VATAN TUYG'USI</text>
+    <text class="izoh" x="0" y="236">3–5 video → kadr · nutq · matn tahlili → portret-guvohnoma</text>
+    <g transform="translate(0 270)">
+      <rect width="80" height="30" rx="15" fill="#11444f"/><text class="teg" x="40" y="20" text-anchor="middle">Flask</text>
+      <rect x="90" width="86" height="30" rx="15" fill="#11444f"/><text class="teg" x="133" y="20" text-anchor="middle">yt-dlp</text>
+      <rect x="186" width="88" height="30" rx="15" fill="#11444f"/><text class="teg" x="230" y="20" text-anchor="middle">ffmpeg</text>
+      <rect x="284" width="142" height="30" rx="15" fill="#11444f"/><text class="teg" x="355" y="20" text-anchor="middle">faster-whisper</text>
+      <rect x="436" width="80" height="30" rx="15" fill="#11444f"/><text class="teg" x="476" y="20" text-anchor="middle">Pillow</text>
+    </g>
+  </g>
+
+  <!-- Video kadri skaner qilinadi, so'ng muhr bosiladi (SMIL, 6 s) -->
+  <g transform="translate(760 70)">
+    <rect x="-8" y="-8" width="316" height="184" rx="14" fill="#0a313a" stroke="#1b6a78"/>
+    <g clip-path="url(#kadr)">
+      <rect width="300" height="54" fill="#0099b5"/>
+      <rect y="54" width="300" height="4" fill="#ce1126"/>
+      <rect y="58" width="300" height="52" fill="#ffffff"/>
+      <rect y="110" width="300" height="4" fill="#ce1126"/>
+      <rect y="114" width="300" height="54" fill="#1eb53a"/>
+      <circle cx="40" cy="27" r="13" fill="#ffffff"/><circle cx="45" cy="24" r="12" fill="#0099b5"/>
+      <rect x="0" y="0" width="300" height="10" fill="url(#nur)">
+        <animate attributeName="y" values="-10;-10;168;168" keyTimes="0;.05;.45;1" dur="6s" repeatCount="indefinite"/>
+      </rect>
+    </g>
+    <g fill="#0a313a">
+      <rect x="0" y="176" width="300" height="14" rx="3"/>
+    </g>
+    <g fill="#7fe3f2" opacity=".85">
+      <rect x="8" y="180" width="14" height="6" rx="2"/><rect x="44" y="180" width="14" height="6" rx="2"/><rect x="80" y="180" width="14" height="6" rx="2"/>
+      <rect x="116" y="180" width="14" height="6" rx="2"/><rect x="152" y="180" width="14" height="6" rx="2"/><rect x="188" y="180" width="14" height="6" rx="2"/>
+      <rect x="224" y="180" width="14" height="6" rx="2"/><rect x="260" y="180" width="14" height="6" rx="2"/>
+    </g>
+    <rect x="0" y="194" width="300" height="6" rx="3" fill="#11444f"/>
+    <rect x="0" y="194" width="0" height="6" rx="3" fill="#7fe3f2">
+      <animate attributeName="width" values="0;0;300;300;0" keyTimes="0;.05;.45;.95;1" dur="6s" repeatCount="indefinite"/>
+    </rect>
+
+    <!-- muhr -->
+    <g transform="translate(398 84)" opacity="0">
+      <animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;.5;.55;.92;1" dur="6s" repeatCount="indefinite"/>
+      <animateTransform attributeName="transform" type="scale" additive="sum" values="1.6;1.6;1;1;1" keyTimes="0;.5;.58;.92;1" dur="6s" repeatCount="indefinite"/>
+      <circle r="62" fill="none" stroke="#4ade80" stroke-width="4"/>
+      <circle r="52" fill="none" stroke="#4ade80" stroke-width="1.5" stroke-dasharray="3 4"/>
+      <text class="ball" y="10" text-anchor="middle" fill="#4ade80">100</text>
+      <text class="kich" y="34" text-anchor="middle" fill="#86efac">ANIQLANDI</text>
+    </g>
+  </g>
+</svg>

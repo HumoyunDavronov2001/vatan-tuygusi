@@ -1,0 +1,1661 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a4553">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Vatan tuyg'usi</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230e5a6d'/%3E%3C/svg%3E">
+<meta name="description" content="Instagram videolarida vatanparvarlik mazmunini aniqlaydigan dastur">
+<!-- API manzili shu yerdan keladi. Bo'sh bo'lsa — front va API bir xil
+     manzilda deb hisoblanadi (mahalliy ishlatish). -->
+<script src="config.js"></script>
+<style>
+/* ══════════════════════════════════════════════════════════════════════
+   VATAN TUYG'USI — "Rasmiy hujjat" dizayn tizimi (v3, to'liq yangi tuzilma)
+
+   Konsepsiya: bitta ish yuritish hujjati uch holatda —
+     BLANKA (to'ldiriladigan ro'yxat) → PROTOKOL (jonli jurnal) → GUVOHNOMA.
+   Til: davlat gazetasi estetikasi — serif sarlavhalar, ingichka qoidalar,
+   small-caps yorliqlar, guilloché (xavfsizlik-qog'oz) naqshi.
+   Harakat maqsadli: muhr bosilishi, qator to'ldirilishi, mask-reveal.
+   Kontrast: barcha matn WCAG AA (gradientning eng och nuqtasiga nisbatan).
+   ══════════════════════════════════════════════════════════════════════ */
+/* ══════════ KIRISH SPLASH ══════════ */
+.splash{
+  position:fixed;inset:0;z-index:200;display:grid;place-items:center;
+  background:#f2f6f6;overflow:hidden;
+  transition:opacity .6s ease, visibility .6s;
+  /* JS-siz kafolat: 3.4 s da o'zi yo'qoladi (skript xato bersa ham) */
+  animation:splash-avto .6s ease 3.4s forwards;
+}
+@keyframes splash-avto{to{opacity:0;visibility:hidden;pointer-events:none}}
+.splash.ketdi{opacity:0;visibility:hidden;pointer-events:none}
+.splash-fon{
+  position:absolute;inset:0;
+  background-image:
+    repeating-linear-gradient(45deg, rgba(14,90,109,.05) 0 1px, transparent 1px 8px),
+    repeating-linear-gradient(-45deg, rgba(14,90,109,.04) 0 1px, transparent 1px 10px),
+    radial-gradient(circle at 50% 42%, #ffffff, #eaf1f1 70%);
+}
+.splash-ichi{position:relative;text-align:center;animation:sp-chiq .5s var(--chiq) 2.5s both}
+@keyframes sp-chiq{to{transform:translateY(-6px)}}
+.splash-belgi{width:96px;height:96px;display:block;margin:0 auto 22px}
+.splash-belgi .sp-iz{fill:none;stroke:#d7e2e4;stroke-width:4}
+.splash-belgi .sp-yoy{
+  fill:none;stroke:#0e5a6d;stroke-width:4;stroke-linecap:round;
+  stroke-dasharray:327;stroke-dashoffset:327;transform:rotate(-90deg);transform-origin:60px 60px;
+  animation:sp-halqa 2.2s var(--chiq) .2s forwards;
+}
+@keyframes sp-halqa{to{stroke-dashoffset:0}}
+.splash-belgi .sp-belgi{
+  fill:none;stroke:#0a4553;stroke-width:3.4;stroke-linejoin:round;
+  stroke-dasharray:200;stroke-dashoffset:200;
+  animation:sp-chiz 1.1s var(--chiq) .5s forwards;
+}
+@keyframes sp-chiz{to{stroke-dashoffset:0}}
+.splash-belgi .sp-chek{
+  fill:none;stroke:#1a7f96;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;
+  stroke-dasharray:40;stroke-dashoffset:40;
+  animation:sp-chiz .5s var(--prujina) 1.5s forwards;
+}
+.splash-nom{
+  font-family:var(--serif);font-size:23px;font-weight:700;
+  letter-spacing:.18em;color:#0a2430;
+  clip-path:inset(0 100% 0 0);animation:sp-nom .8s var(--chiq) 1s forwards;
+}
+@keyframes sp-nom{to{clip-path:inset(0 0 0 0)}}
+.splash-izoh{
+  font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:#52676d;
+  margin-top:8px;opacity:0;animation:sp-izoh .6s var(--chiq) 1.5s forwards;
+}
+@keyframes sp-izoh{to{opacity:1}}
+.splash-yol{
+  width:120px;height:3px;border-radius:2px;background:#dbe6e6;
+  margin:24px auto 0;overflow:hidden;
+}
+.splash-yol i{
+  display:block;height:100%;width:0;border-radius:2px;
+  background:linear-gradient(90deg,#0a4553,#1a7f96);
+  animation:sp-yol 2.6s var(--chiq) .3s forwards;
+}
+@keyframes sp-yol{to{width:100%}}
+@media (prefers-reduced-motion:reduce){
+  .splash{animation-delay:.4s!important}
+  .splash-ichi *{animation:none!important}
+  .splash-belgi .sp-yoy,.splash-belgi .sp-belgi,.splash-belgi .sp-chek{stroke-dashoffset:0!important}
+  .splash-nom{clip-path:none!important}.splash-izoh{opacity:1!important}
+  .splash-yol i{width:100%!important}
+}
+
+:root{
+  --qogoz:#f2f6f6;            /* sahifa foni */
+  --varaq:#ffffff;            /* hujjat varag'i */
+  --siyoh:#0a2430;            /* sarlavha siyohi */
+  --matn:#14262e;
+  --matn2:#38505a;
+  --xira:#52676d;             /* qogozda 5.4:1, oq varaqda 5.8:1 */
+
+  --kok:#0e5a6d;
+  --kok2:#093f4d;
+  --kok3:#1a7f96;
+  --kok-fon:#e4f1f4;
+  --kok-fon2:#cfe7ec;
+
+  --chiziq:#d7e2e4;           /* hairline */
+  --chiziq2:#c0d3d7;
+
+  --yashil:#0d6d37;  --yashil-fon:#e2f2e9;  --yashil-chek:#a9d5bc;
+  --sariq:#7d5100;   --sariq-fon:#f9efd9;   --sariq-chek:#e3c88f;
+  --kul:#4b5d70;     --kul-fon:#e7edf3;     --kul-chek:#c4d0dc;
+  --qizil:#9c1f17;   --qizil-fon:#fbeae9;   --qizil-chek:#ecb3ae;
+
+  --serif:Georgia,'Times New Roman',serif;
+
+  --s1:0 1px 2px rgba(10,36,48,.05), 0 1px 1px rgba(10,36,48,.03);
+  --s2:0 3px 12px -3px rgba(10,36,48,.10), 0 6px 20px -6px rgba(10,36,48,.07);
+  --s3:0 10px 30px -10px rgba(10,36,48,.22);
+  --s-yuqori:0 -6px 24px -8px rgba(10,36,48,.14);
+
+  --chiq:cubic-bezier(.22,1,.36,1);
+  --prujina:cubic-bezier(.34,1.45,.5,1);
+  --tez:cubic-bezier(.4,0,.2,1);
+
+  --tepa:env(safe-area-inset-top,0px);
+  --past:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  margin:0; background:var(--qogoz); color:var(--matn);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  line-height:1.55; overflow-x:hidden; -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+/* ══════════ GAZETA SARLAVHASI (masthead) ══════════ */
+.bayroq-chiziq{
+  height:3px; position:relative; z-index:2;
+  background:linear-gradient(90deg,#0e5a6d 0 33.33%,#eef4f4 33.33% 66.66%,#0d6d37 66.66%);
+}
+.tepa-panel{
+  position:relative; overflow:hidden; z-index:1;
+  color:#fff; padding:calc(var(--tepa) + 22px) 18px 0;
+  /* Guilloché — qimmatli qog'oz to'ri + chuqur navy */
+  background-image:
+    repeating-linear-gradient(45deg, rgba(255,255,255,.030) 0 1px, transparent 1px 7px),
+    repeating-linear-gradient(-45deg, rgba(255,255,255,.022) 0 1px, transparent 1px 9px),
+    linear-gradient(160deg,#06232b 0%,#0a4553 55%,#10606f 100%);
+  box-shadow:0 8px 28px -10px rgba(6,35,43,.55);
+}
+.tepa-panel::after{
+  content:""; position:absolute; top:-55%; right:-12%;
+  width:300px; height:300px; border-radius:50%;
+  background:radial-gradient(circle,rgba(70,180,205,.22),transparent 66%);
+  pointer-events:none;
+}
+.tepa-ichi{
+  position:relative; z-index:1; max-width:640px; margin:0 auto; text-align:center;
+}
+.tashkilot-logo{
+  display:block;width:76px;height:76px;object-fit:contain;margin:0 auto 12px;
+  filter:drop-shadow(0 3px 8px rgba(6,35,43,.4));
+  animation:sp-belgi-kir .7s var(--prujina) both;
+}
+@keyframes sp-belgi-kir{from{opacity:0;transform:scale(.7) translateY(6px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.tizim-nom{
+  font-family:var(--serif); font-size:24px; font-weight:700;
+  letter-spacing:.22em; text-indent:.22em; line-height:1.1;
+  clip-path:inset(0 0 0 0);
+  animation:nom-ochil .8s var(--chiq) both;
+}
+@keyframes nom-ochil{from{opacity:0;clip-path:inset(0 50% 0 50%)}to{opacity:1;clip-path:inset(0 0 0 0)}}
+/* Gazeta qo'sh chizig'i */
+.tepa-qoida{
+  height:5px; max-width:300px; margin:12px auto 10px;
+  border-top:2px solid rgba(255,255,255,.85);
+  border-bottom:1px solid rgba(255,255,255,.5);
+  transform-origin:center;
+  animation:qoida-chiz .7s var(--chiq) .25s both;
+}
+@keyframes qoida-chiz{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.tizim-izoh{
+  font-size:11px; color:#d3ecf2; letter-spacing:.02em; font-weight:500;
+  max-width:400px; margin:0 auto; line-height:1.45;
+  animation:izoh-kir .6s var(--chiq) .4s both;
+}
+@keyframes izoh-kir{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ══════════ BOSQICH RELSI ══════════ */
+.bosqichlar{
+  position:relative; z-index:1; max-width:400px; margin:18px auto 0;
+  padding:12px 0 16px; border-top:1px solid rgba(255,255,255,.16);
+  animation:izoh-kir .6s var(--chiq) .52s both;
+}
+.bosqich-ichi{list-style:none;margin:0;padding:0;display:flex;align-items:center;justify-content:center;gap:4px}
+.bq{
+  display:flex;align-items:center;gap:8px;
+  font-size:11.5px;font-weight:650;letter-spacing:.03em;
+  color:#d3ecf2;transition:color .4s var(--chiq);   /* eng och nuqtada 4.8:1 */
+}
+.bq:not(:last-child)::after{
+  content:"";width:34px;height:1px;margin:0 10px 0 12px;
+  background:rgba(255,255,255,.28);
+}
+.bq:not(:last-child).tugagan::after{background:#6fd0e8}
+.bq i{
+  width:23px;height:23px;border-radius:50%;flex:none;display:grid;place-items:center;
+  font-style:normal;font-size:11px;font-weight:800;
+  border:1.5px solid rgba(255,255,255,.55);color:#d3ecf2;
+  transition:all .4s var(--prujina);
+}
+.bq.faol{color:#fff}
+.bq.faol i{
+  background:#fff;color:var(--kok2);border-color:#fff;
+  box-shadow:0 0 0 5px rgba(255,255,255,.15);transform:scale(1.08);
+}
+.bq.tugagan{color:#daf0f5}
+.bq.tugagan i{background:#6fd0e8;border-color:#6fd0e8;color:var(--kok2);font-size:0}
+.bq.tugagan i::before{content:"\2713";font-size:12px;font-weight:800}
+@media (max-width:379px){ .bq span{display:none} .bq:not(:last-child)::after{width:22px} }
+
+/* ══════════ KARKAS ══════════ */
+#ilova{max-width:640px;margin:0 auto;padding:28px 18px calc(var(--past) + 40px)}
+.ekran{display:none}
+.ekran.faol{display:block}
+.ekran.faol > *{opacity:0;animation:yuk .6s var(--chiq) forwards}
+.ekran.faol > *:nth-child(1){animation-delay:.02s}
+.ekran.faol > *:nth-child(2){animation-delay:.10s}
+.ekran.faol > *:nth-child(3){animation-delay:.18s}
+.ekran.faol > *:nth-child(4){animation-delay:.26s}
+.ekran.faol > *:nth-child(n+5){animation-delay:.32s}
+@keyframes yuk{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.ekran:focus,.ekran:focus-visible{outline:none}
+
+/* Bo'lim boshi: overline + serif sarlavha */
+.blok-bosh{margin-bottom:20px}
+.ustki-yozuv{
+  display:flex;align-items:center;gap:10px;
+  font-size:10.5px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--xira);margin-bottom:10px;
+}
+.ustki-yozuv::before{content:"";width:26px;height:2px;background:var(--kok)}
+h1{
+  font-family:var(--serif);font-size:30px;line-height:1.22;margin:0 0 10px;
+  letter-spacing:-.01em;font-weight:700;color:var(--siyoh);
+}
+h1 em{font-style:italic;color:var(--kok)}
+.kirish-matn{color:var(--matn2);font-size:15px;margin:0;max-width:54ch}
+.kirish-matn b{color:var(--matn);font-weight:650}
+
+/* ══════════ BLANKA VARAG'I ══════════ */
+.kiritish-varaq{
+  background:var(--varaq);border:1px solid var(--chiziq);border-radius:14px;
+  padding:18px;box-shadow:var(--s2);
+}
+.kiritgich{display:flex;gap:9px;margin-bottom:16px}
+input[type=url]{
+  flex:1;min-width:0;padding:13px 15px;font-size:16px;font-family:inherit;
+  background:#fff;border:1.5px solid var(--chiziq2);border-radius:10px;
+  color:var(--matn);outline:none;
+  transition:border-color .2s var(--chiq),box-shadow .2s var(--chiq);
+}
+input[type=url]::placeholder{color:#82989e}
+input[type=url]:focus{border-color:var(--kok3);box-shadow:0 0 0 4px rgba(26,127,150,.16)}
+.tugma{
+  padding:13px 20px;font-size:14.5px;font-weight:650;font-family:inherit;
+  border:1.5px solid var(--chiziq2);border-radius:10px;background:#fff;
+  color:var(--matn);cursor:pointer;flex:none;position:relative;overflow:hidden;
+  transition:background .2s,border-color .2s,transform .12s var(--tez);
+}
+.tugma:hover{background:#f1f7f7;border-color:var(--kok3)}
+.tugma:active{transform:scale(.96)}
+.tugma.bekor{
+  display:block;width:100%;margin-top:14px;background:#fff;
+  border-color:var(--qizil-chek);color:var(--qizil);font-size:14px;padding:12px;
+}
+.tugma.bekor:hover{background:var(--qizil-fon);border-color:var(--qizil)}
+
+/* Daftar: KERAK_MAX (3–5) ta oldindan chizilgan qator */
+.royxat{list-style:none;margin:0;padding:0;border-top:1px solid var(--chiziq)}
+.qator{
+  display:flex;align-items:center;gap:12px;min-height:48px;padding:6px 2px;
+  border-bottom:1px solid var(--chiziq);font-size:13.5px;
+}
+.qator-raqam{
+  width:30px;flex:none;font-size:12px;font-weight:800;color:var(--kok);
+  font-variant-numeric:tabular-nums;letter-spacing:.04em;
+}
+.qator.bosh .qator-raqam{color:#9cb2b8}
+.bosh-chiziq{
+  flex:1;align-self:center;height:0;margin-right:14px;
+  border-bottom:1.5px dashed var(--chiziq2);
+}
+.link-matn{
+  flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  color:var(--matn2);font-variant-numeric:tabular-nums;font-weight:600;
+}
+.link-matn i{font-style:normal;color:var(--xira);font-weight:400}
+.pbadge{
+  display:inline-grid;place-items:center;width:26px;height:18px;margin-right:8px;
+  border-radius:4px;font-size:9px;font-weight:800;letter-spacing:.02em;
+  color:#fff;vertical-align:1px;flex:none;
+}
+.pbadge.instagram{background:linear-gradient(135deg,#7a3fb5,#c72d6b 55%,#e8823a)}
+.pbadge.youtube{background:#c4302b}
+.pbadge.tiktok{background:#111;box-shadow:inset 0 0 0 1px rgba(255,255,255,.15)}
+.pbadge.facebook{background:#1877f2}
+.qator.yangi{animation:qator-toldi .55s var(--chiq) both}
+@keyframes qator-toldi{
+  from{background:var(--kok-fon);opacity:0;transform:translateX(-14px)}
+  60%{background:var(--kok-fon)}
+  to{background:transparent;opacity:1;transform:translateX(0)}
+}
+.qator.uchdi{animation:qator-uchdi .28s var(--tez) forwards}
+@keyframes qator-uchdi{to{opacity:0;transform:translateX(26px)}}
+.ochir{
+  width:44px;height:44px;margin:-6px -10px -6px 0;flex:none;border:0;padding:0;
+  background:none;cursor:pointer;
+}
+.ochir span{
+  color:var(--xira);font-size:19px;line-height:44px;display:block;
+  transition:color .2s,transform .2s var(--prujina);
+}
+.ochir:hover span{color:var(--qizil);transform:rotate(90deg)}
+.eslatma{font-size:12.5px;color:var(--xira);margin:14px 2px 0;line-height:1.55}
+.eslatma b{color:var(--matn2)}
+
+/* ══════════ YOPISHQOQ HARAKAT PANELI ══════════ */
+.harakat{
+  position:fixed;left:0;right:0;bottom:0;z-index:30;
+  background:rgba(255,255,255,.94);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border-top:1px solid var(--chiziq);box-shadow:var(--s-yuqori);
+}
+.harakat-ichi{
+  max-width:640px;margin:0 auto;display:flex;align-items:center;gap:14px;
+  padding:12px 18px calc(var(--past) + 12px);
+}
+.harakat-malumot{flex:1;min-width:0;line-height:1.3}
+.harakat-malumot b{
+  display:block;font-size:17px;font-weight:800;color:var(--siyoh);
+  font-variant-numeric:tabular-nums;
+}
+.harakat-malumot span{font-size:12px;color:var(--xira);display:block;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.harakat.tayyor .harakat-malumot b{color:var(--yashil)}
+.tugma.asosiy{
+  flex:none;margin:0;padding:14px 22px;font-size:15.5px;font-weight:750;
+  background:linear-gradient(135deg,var(--kok2) 0%,var(--kok) 100%);
+  color:#fff;border-color:transparent;border-radius:11px;
+  box-shadow:0 8px 22px -8px rgba(9,63,77,.55);letter-spacing:.01em;
+}
+.tugma.asosiy:hover{background:linear-gradient(135deg,#092c50 0%,var(--kok2) 100%)}
+.tugma.asosiy:not(:disabled)::after{
+  content:"";position:absolute;top:0;left:-70%;width:55%;height:100%;
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,.30),transparent);
+  transform:skewX(-18deg);animation:yoltiroq 3.8s ease-in-out infinite;
+}
+@keyframes yoltiroq{0%{left:-70%}42%,100%{left:150%}}
+.tugma.asosiy:disabled{
+  background:#e4ecec;color:#52676d;border-color:var(--chiziq2);
+  cursor:default;box-shadow:none;
+}
+/* Panel pastini bosib qo'ymasin */
+#ekran-kiritish{padding-bottom:110px}
+@media (max-width:379px){ .harakat-malumot span{display:none} }
+
+/* ══════════ PROTOKOL (tahlil jurnali) ══════════ */
+.foiz-qator{display:flex;align-items:baseline;gap:12px;margin:2px 0 10px}
+.foiz-katta{
+  font-size:52px;font-weight:800;letter-spacing:-.03em;line-height:1;
+  color:var(--siyoh);font-variant-numeric:tabular-nums;
+}
+.foiz-tag{
+  font-size:13px;color:var(--xira);font-weight:650;
+  font-variant-numeric:tabular-nums;letter-spacing:.06em;
+}
+.jarayon-yol{
+  height:4px;border-radius:2px;background:#e1eaeb;overflow:hidden;margin-bottom:14px;
+}
+.jarayon-yol i{
+  display:block;height:100%;width:0;border-radius:2px;
+  background:linear-gradient(90deg,var(--kok2),var(--kok3));
+  transition:width .6s var(--prujina);
+}
+.bosqich{font-size:15.5px;font-weight:750;color:var(--siyoh);margin-bottom:2px;min-height:23px}
+.bosqich-izoh{
+  font-size:13px;color:var(--kok);min-height:20px;font-variant-numeric:tabular-nums;
+}
+.bosqich-izoh:not(:empty)::after{
+  content:"";display:inline-block;width:7px;height:13px;margin-left:3px;
+  background:var(--kok3);vertical-align:-2px;border-radius:1px;
+  animation:kursor 1s steps(1) infinite;
+}
+@keyframes kursor{50%{opacity:0}}
+
+/* Jurnal qatorlari */
+.plitkalar-orin{
+  position:relative;border-radius:14px;overflow:hidden;
+  background:var(--varaq);border:1px solid var(--chiziq);box-shadow:var(--s2);
+}
+.plitkalar-orin::after{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:2;
+  background:linear-gradient(180deg,transparent 40%,rgba(26,127,150,.08) 50%,transparent 60%);
+  transform:translateY(-100%);animation:skan 3s ease-in-out infinite;
+}
+.plitkalar-orin.tugagan::after{display:none}
+@keyframes skan{0%{transform:translateY(-100%)}60%,100%{transform:translateY(100%)}}
+.plitkalar{position:relative;z-index:1}
+.pqator{
+  display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 14px;
+  border-bottom:1px solid var(--chiziq);
+  border-left:3px solid transparent;
+  transition:background .3s,border-color .3s;
+}
+.pqator:last-child{border-bottom:0}
+.pq-malumot{flex:1;min-width:0;line-height:1.35}
+.pq-yol{
+  display:block;font-size:13.5px;font-weight:650;color:var(--matn);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  font-variant-numeric:tabular-nums;
+}
+.pq-yol i{font-style:normal;color:var(--xira);font-weight:400}
+.pq-qadam{
+  display:block;font-size:12px;color:var(--xira);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  transition:color .3s;
+}
+.pqator.jarayonda{background:#f0f8fa;border-left-color:var(--kok3)}
+.pqator.jarayonda .pq-qadam{color:var(--kok);font-weight:600}
+.pqator.jarayonda .pq-qadam::after{
+  content:"…";letter-spacing:.1em;
+  animation:kursor 1.1s steps(1) infinite;
+}
+.pqator.BOR{border-left-color:var(--yashil)}
+.pqator.QISMAN{border-left-color:var(--sariq)}
+.pqator.YOQ{border-left-color:var(--kul)}
+.pqator.xato{border-left-color:var(--qizil)}
+.pqator.xato .pq-qadam{color:var(--qizil)}
+
+/* Ball muhri — tugaganda "bosiladi" */
+.pq-muhr{
+  min-width:44px;height:38px;padding:0 8px;flex:none;
+  display:grid;place-items:center;border-radius:9px;
+  font-size:14.5px;font-weight:800;font-variant-numeric:tabular-nums;
+  border:1.5px solid transparent;color:transparent;
+}
+.pq-muhr.kutmoqda{border:1.5px dashed var(--chiziq2)}
+.pq-muhr.jarayonda{border:1.5px dashed var(--kok3)}
+.pq-muhr.BOR{background:var(--yashil-fon);color:var(--yashil);border-color:var(--yashil-chek)}
+.pq-muhr.QISMAN{background:var(--sariq-fon);color:var(--sariq);border-color:var(--sariq-chek)}
+.pq-muhr.YOQ{background:var(--kul-fon);color:var(--kul);border-color:var(--kul-chek)}
+.pq-muhr.xato{background:var(--qizil-fon);color:var(--qizil);border-color:var(--qizil-chek);font-size:17px}
+.pq-muhr.bosildi{animation:muhr-bos .5s var(--prujina)}
+@keyframes muhr-bos{
+  0%{transform:scale(1.7) rotate(-12deg);opacity:0}
+  55%{opacity:1}
+  100%{transform:scale(1) rotate(0)}
+}
+.kutish{text-align:center;font-size:12.5px;color:var(--xira);margin:16px 8px 0;line-height:1.6}
+.aloqa{
+  margin-top:22px;padding-top:16px;border-top:1px solid var(--chiziq);
+  text-align:center;
+}
+.aloqa-nom{
+  font-size:10px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--xira);margin-bottom:6px;
+}
+.aloqa-ism{font-size:14px;font-weight:650;color:var(--matn)}
+.aloqa-tel{
+  display:inline-block;margin-top:3px;font-size:14px;font-weight:700;
+  color:var(--kok);text-decoration:none;font-variant-numeric:tabular-nums;
+  letter-spacing:.02em;
+}
+.aloqa-tel:hover{color:var(--kok3)}
+
+/* ══════════ GUVOHNOMA (natija) ══════════ */
+.sert-bosh{
+  position:relative;overflow:hidden;color:#fff;text-align:center;
+  margin:0 -18px 22px;padding:32px 22px 26px;
+  background-image:
+    repeating-linear-gradient(45deg, rgba(255,255,255,.030) 0 1px, transparent 1px 7px),
+    repeating-linear-gradient(-45deg, rgba(255,255,255,.022) 0 1px, transparent 1px 9px),
+    linear-gradient(160deg,#06232b 0%,#0a4553 55%,#10606f 100%);
+  box-shadow:var(--s3);
+}
+@media (min-width:640px){ .sert-bosh{margin:0 0 22px;border-radius:16px} }
+.sert-bosh::after{
+  content:""; position:absolute; top:-50%; right:-10%;
+  width:280px;height:280px;border-radius:50%;
+  background:radial-gradient(circle,rgba(70,180,205,.20),transparent 66%);
+  pointer-events:none;
+}
+.sert-bosh > *{position:relative;z-index:1}
+.tamg{
+  display:inline-block;font-size:10.5px;letter-spacing:.2em;text-indent:.2em;
+  text-transform:uppercase;color:#d3ecf2;font-weight:700;
+  border:1px solid rgba(255,255,255,.45);border-radius:3px;
+  padding:5px 12px;margin-bottom:14px;
+}
+.rekvizit{
+  display:flex;justify-content:center;gap:18px;flex-wrap:wrap;
+  font-size:11.5px;letter-spacing:.08em;color:#daf0f5;
+  font-variant-numeric:tabular-nums;margin-bottom:12px;
+}
+.portret-nom{
+  font-family:var(--serif);font-size:30px;font-weight:700;
+  letter-spacing:-.01em;line-height:1.2;margin:0 0 10px;color:#fff;
+  animation:nom-ochil .8s var(--chiq) .15s both;
+}
+.portret-jumla{
+  color:#d8eef4;font-size:14.5px;margin:0 auto;max-width:440px;line-height:1.55;
+  animation:izoh-kir .6s var(--chiq) .35s both;
+}
+/* Dumaloq tasdiq muhri */
+.sert-muhr{
+  width:58px;height:58px;margin:18px auto 0;border-radius:50%;
+  display:grid;place-items:center;font-size:22px;font-weight:800;color:#6fd0e8;
+  border:2px solid rgba(111,208,232,.78);
+  box-shadow:inset 0 0 0 3px rgba(6,35,43,.6), inset 0 0 0 4px rgba(111,208,232,.5);
+  animation:muhr-bos .6s var(--prujina) .55s both;
+}
+
+.sert-ball{
+  background:var(--varaq);border:1px solid var(--chiziq);border-radius:14px;
+  padding:22px 18px;text-align:center;box-shadow:var(--s2);margin-bottom:6px;
+}
+.katta-raqam{
+  font-size:58px;font-weight:800;letter-spacing:-.04em;line-height:1;
+  font-variant-numeric:tabular-nums;color:var(--kok);
+}
+.ball-yorliq{font-size:12.5px;color:var(--xira);margin-top:4px}
+.taqsim{
+  display:flex;height:22px;border-radius:5px;overflow:hidden;margin:16px 0 10px;
+  background:#e4ecec;border:1px solid var(--chiziq);
+}
+.taqsim span{display:grid;place-items:center;overflow:hidden;transition:width .95s var(--prujina);width:0}
+.taqsim .s-bor{background:linear-gradient(180deg,#149c4f,#0d6d37)}
+.taqsim .s-qisman{background:linear-gradient(180deg,#a86d00,#7d5100)}
+.taqsim .s-yoq{background:linear-gradient(180deg,#647a90,#4b5d70)}
+.taqsim b{font-size:11px;font-weight:750;color:#fff;font-variant-numeric:tabular-nums;
+  opacity:0;animation:raqam-kir .45s var(--chiq) .9s both}
+@keyframes raqam-kir{from{opacity:0;transform:scale(.5)}to{opacity:1;transform:scale(1)}}
+.afsona{display:flex;gap:15px;flex-wrap:wrap;justify-content:center;font-size:12.5px;color:var(--xira)}
+.afsona i{width:9px;height:9px;border-radius:3px;display:inline-block;margin-right:6px}
+
+/* Gazeta bo'lim sarlavhasi */
+h3{
+  font-size:11px;text-transform:uppercase;letter-spacing:.16em;color:var(--xira);
+  margin:26px 2px 10px;font-weight:800;display:flex;align-items:center;gap:10px;
+}
+h3::after{content:"";flex:1;height:1px;background:var(--chiziq2)}
+.matn{font-size:15px;color:var(--matn2);margin:0;line-height:1.7}
+#portret > .matn{padding:0 2px}
+
+.chiplar{display:flex;flex-wrap:wrap;gap:7px}
+.chip{
+  background:var(--varaq);border:1px solid var(--chiziq2);color:var(--kok);
+  padding:6px 13px;border-radius:5px;font-size:13px;font-weight:650;
+  opacity:0;animation:chip-kir .45s var(--prujina) both;
+}
+@keyframes chip-kir{from{opacity:0;transform:scale(.82) translateY(4px)}to{opacity:1;transform:scale(1) translateY(0)}}
+
+/* Raqamlangan bandlar — hujjat moddalari */
+.bandlar{list-style:none;margin:0;padding:0;counter-reset:band}
+.kuzatuv{
+  position:relative;padding:12px 2px 12px 44px;margin:0;
+  border-bottom:1px solid var(--chiziq);
+  opacity:0;animation:kuz-kir .5s var(--chiq) both;
+}
+.kuzatuv:last-child{border-bottom:0}
+.kuzatuv::before{
+  counter-increment:band;
+  content:counter(band,decimal-leading-zero) ".";
+  position:absolute;left:2px;top:12px;
+  font-family:var(--serif);font-style:italic;font-size:16px;color:var(--kok);
+}
+@keyframes kuz-kir{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:translateX(0)}}
+.kuzatuv b{display:block;font-size:14.5px;margin-bottom:3px;color:var(--matn)}
+.kuzatuv p{margin:0;font-size:13.5px;color:var(--matn2);line-height:1.6}
+
+/* Mayda harf — huquqiy izoh */
+.halol{
+  margin-top:22px;padding-top:12px;border-top:1px solid var(--chiziq2);
+  font-size:12px;color:var(--xira);line-height:1.65;
+}
+.halol b{color:var(--matn2);display:block;font-size:10.5px;letter-spacing:.14em;
+  text-transform:uppercase;margin-bottom:4px}
+
+/* Videolar jurnali (guvohnoma ichida) */
+.vkarta{
+  display:flex;align-items:center;gap:12px;width:100%;min-height:58px;
+  padding:9px 4px;margin:0;text-align:left;cursor:pointer;
+  background:none;border:0;border-bottom:1px solid var(--chiziq);
+  font-family:inherit;color:var(--matn);font-size:inherit;line-height:inherit;
+  transition:background .2s,transform .16s var(--chiq);
+  opacity:0;animation:kuz-kir .5s var(--chiq) both;
+}
+.vkarta:last-of-type{border-bottom:0}
+.vkarta:hover{background:#f0f7f8}
+.vkarta:active{transform:scale(.995)}
+.vball{
+  min-width:46px;height:40px;padding:0 8px;border-radius:9px;flex:none;
+  display:grid;place-items:center;
+  font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;
+  border:1.5px solid transparent;
+}
+.vball.BOR{background:var(--yashil-fon);color:var(--yashil);border-color:var(--yashil-chek)}
+.vball.QISMAN{background:var(--sariq-fon);color:var(--sariq);border-color:var(--sariq-chek)}
+.vball.YOQ{background:var(--kul-fon);color:var(--kul);border-color:var(--kul-chek)}
+.vball.xato{background:var(--qizil-fon);color:var(--qizil);border-color:var(--qizil-chek);font-size:18px}
+.vmatn{flex:1;min-width:0}
+.vmatn b{display:block;font-size:14px;font-weight:700;margin-bottom:1px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--matn)}
+.vmatn span{font-size:12.5px;color:var(--xira);display:block;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vstrelka{color:#52676d;font-size:19px;flex:none;transition:transform .2s var(--prujina)}
+.vkarta:hover .vstrelka{transform:translateX(4px);color:var(--kok3)}
+
+/* ══════════ PASTKI VARAQ ══════════ */
+.parda{
+  position:fixed;inset:0;background:rgba(6,35,43,.5);z-index:40;
+  opacity:0;pointer-events:none;transition:opacity .28s;
+  backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
+}
+.parda.ochiq{opacity:1;pointer-events:auto}
+.varaq{
+  position:fixed;left:0;right:0;bottom:0;z-index:41;max-width:640px;margin:0 auto;
+  background:#fff;border:1px solid var(--chiziq);border-bottom:0;
+  border-radius:20px 20px 0 0;padding:8px 20px calc(var(--past) + 24px);
+  max-height:88vh;overflow-y:auto;transform:translateY(101%);
+  transition:transform .4s var(--prujina);
+  box-shadow:0 -14px 48px -14px rgba(10,36,48,.36);
+}
+.varaq.ochiq{transform:translateY(0)}
+.varaq:focus{outline:none}
+.varaq-bosh{position:relative;padding-top:8px;margin-bottom:15px}
+.tutqich{width:42px;height:4px;border-radius:2px;background:#c5d5d8;margin:0 auto}
+.varaq-yop{
+  position:absolute;top:-6px;right:-8px;width:44px;height:44px;border:0;padding:0;
+  background:none;color:var(--xira);font-size:25px;line-height:44px;cursor:pointer;
+  border-radius:10px;transition:color .2s,transform .2s var(--prujina);
+}
+.varaq-yop:hover{color:var(--matn);transform:rotate(90deg)}
+
+ul.dalil{list-style:none;margin:0;padding:0}
+ul.dalil li{
+  display:flex;gap:11px;padding:10px 0;border-bottom:1px solid var(--chiziq);
+  font-size:13.5px;color:var(--matn2);
+}
+ul.dalil li:last-child{border-bottom:0}
+.manba{
+  flex:none;font-size:10px;font-weight:800;letter-spacing:.05em;padding:3px 8px;
+  border-radius:4px;height:fit-content;margin-top:2px;min-width:48px;text-align:center;
+  border:1px solid transparent;
+}
+.manba.kadr{background:var(--kok-fon);color:var(--kok);border-color:#c2e0e8}
+.manba.ovoz{background:#efe9fa;color:#4c3492;border-color:#d5cbef}
+.manba.matn{background:var(--sariq-fon);color:var(--sariq);border-color:var(--sariq-chek)}
+.vaqt{color:var(--xira);font-variant-numeric:tabular-nums}
+details{margin-top:11px}
+summary{cursor:pointer;color:var(--kok);font-size:13px;font-weight:700;padding:7px 0}
+summary:hover{color:var(--kok3)}
+details pre{
+  white-space:pre-wrap;word-break:break-word;background:#f1f5f5;
+  border:1px solid var(--chiziq);border-radius:9px;padding:12px;font-size:12.5px;
+  font-family:ui-monospace,Menlo,monospace;max-height:240px;overflow:auto;
+  margin:7px 0 0;color:var(--matn2);
+}
+
+/* ══════════ XABARLAR ══════════ */
+.xato-karta{
+  background:var(--qizil-fon);border:1px solid var(--qizil-chek);
+  border-left:3px solid var(--qizil);border-radius:11px;padding:15px;
+  white-space:pre-wrap;font-size:13.5px;color:#78180f;margin:13px 0;
+  overflow-wrap:anywhere;word-break:break-word;animation:silkin .5s var(--tez);box-shadow:var(--s1);
+}
+@keyframes silkin{18%{transform:translateX(-7px)}40%{transform:translateX(6px)}62%{transform:translateX(-3px)}100%{transform:translateX(0)}}
+.ogoh-karta{
+  background:var(--sariq-fon);border:1px solid var(--sariq-chek);
+  border-left:3px solid var(--sariq);border-radius:11px;padding:14px 16px;
+  font-size:13.5px;color:#5f3d00;margin:13px 0;line-height:1.6;box-shadow:var(--s1);
+}
+.ogoh-karta b{color:#452c00}
+pre.buyruq{
+  background:#fff;border:1px solid var(--sariq-chek);border-radius:7px;
+  padding:9px 11px;margin:9px 0;font-size:12px;
+  font-family:ui-monospace,Menlo,monospace;color:var(--matn);
+  white-space:pre-wrap;overflow-wrap:anywhere;
+}
+
+/* ══════════ FOKUS ══════════ */
+.korinmas{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+  clip-path:inset(50%);white-space:nowrap;border:0}
+:focus-visible{outline:2.5px solid var(--kok3);outline-offset:2px;border-radius:6px}
+input:focus-visible{outline:none}
+.vkarta:focus-visible,.tugma:focus-visible,.ochir:focus-visible{outline-offset:1px}
+
+/* ══════════ YOTIQ TELEFON ══════════ */
+@media (max-height:560px) and (orientation:landscape){
+  .tepa-panel{padding-top:calc(var(--tepa) + 10px)}
+  .tizim-nom{font-size:18px}
+  .tepa-qoida{margin:8px auto 6px}
+  .bosqichlar{margin-top:10px;padding:8px 0 10px}
+  #ilova{padding-top:16px}
+  h1{font-size:23px}
+  .foiz-katta{font-size:38px}
+  .pqator{min-height:46px}
+  .sert-bosh{padding:20px 18px 18px}
+  .portret-nom{font-size:24px}
+  .katta-raqam{font-size:42px}
+  #ekran-kiritish{padding-bottom:96px}
+}
+
+/* ══════════ HARAKATNI KAMAYTIRISH ══════════ */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms!important;animation-iteration-count:1!important;
+    transition-duration:.01ms!important;animation-delay:0ms!important;
+    transition-delay:0ms!important;scroll-behavior:auto!important;
+  }
+  .ekran.faol > *{opacity:1}
+  .tugma.asosiy:not(:disabled)::after,.plitkalar-orin::after,
+  .tepa-panel::after,.sert-bosh::after,
+  .bosqich-izoh:not(:empty)::after,.pqator.jarayonda .pq-qadam::after{display:none}
+}
+
+/* ══════════ BOSMA — rasmiy hujjat ══════════ */
+@media print{
+  @page{margin:14mm}
+  body{background:#fff}
+  .tepa-panel{background:#fff!important;color:#000!important;box-shadow:none;
+    border-bottom:2px solid #0e5a6d;padding:0 0 10px}
+  .tepa-panel::after,.bayroq-chiziq,.bosqichlar{display:none!important}
+  .tizim-nom{color:#0e5a6d!important}
+  .tepa-qoida{border-color:#0e5a6d!important}
+  .tizim-izoh{color:#333!important}
+  .sert-bosh{background:#fff!important;color:#000!important;margin:0 0 18px;
+    border:1.5px solid #0e5a6d!important;border-radius:8px;box-shadow:none}
+  .sert-bosh::after{display:none}
+  .portret-nom{color:#0e5a6d!important}
+  .portret-jumla,.rekvizit{color:#333!important}
+  .tamg{color:#0e5a6d!important;border-color:#0e5a6d!important}
+  .sert-muhr{color:#0e5a6d!important;border-color:#0e5a6d!important;box-shadow:none}
+  .taqsim b{color:#fff!important}
+  .katta-raqam{color:#0e5a6d!important}
+  .sert-ball,.kiritish-varaq,.plitkalar-orin{box-shadow:none!important;break-inside:avoid}
+  .ekran.faol > *,.chip,.kuzatuv,.vkarta{opacity:1!important}
+  .tugma,.vstrelka,.harakat,#qayta-tugma,.parda,.varaq,.jarayon-yol{display:none!important}
+  .vkarta{cursor:default}
+  h3{break-after:avoid}
+  details{display:none}
+}
+</style>
+</head>
+
+<body>
+
+<!-- ══════════ KIRISH SPLASH (3 soniya) ══════════ -->
+<div class="splash" id="splash" role="status" aria-label="Yuklanmoqda">
+  <div class="splash-fon" aria-hidden="true"></div>
+  <div class="splash-ichi">
+    <svg class="splash-belgi" viewBox="0 0 120 120" aria-hidden="true">
+      <circle class="sp-iz" cx="60" cy="60" r="52"></circle>
+      <circle class="sp-yoy" cx="60" cy="60" r="52"></circle>
+      <path class="sp-belgi" d="M60 34 L82 44 v22c0 17-11 30-22 34 -11-4-22-17-22-34 V44 L60 34z"></path>
+      <path class="sp-chek" d="M50 62 l7 7 15-17"></path>
+    </svg>
+    <div class="splash-nom">VATAN&nbsp;TUYG'USI</div>
+    <div class="splash-izoh">Ijtimoiy tarmoq tahlili</div>
+    <div class="splash-yol"><i></i></div>
+  </div>
+</div>
+
+<div class="bayroq-chiziq"></div>
+<header class="tepa-panel">
+  <div class="tepa-ichi">
+    <img class="tashkilot-logo" src="logo.png" alt="Tashkilot logotipi"
+         onerror="this.style.display='none'">
+    <div class="tizim-nom">VATAN TUYG'USI</div>
+    <div class="tepa-qoida" aria-hidden="true"></div>
+    <div class="tizim-izoh">Yangi O'zbekiston yoshlarini harbiy vatanparvarlik
+      tuyg'usida tarbiyalashda ijtimoiy tarmoq tahlili</div>
+  </div>
+  <nav class="bosqichlar" aria-label="Jarayon bosqichlari">
+    <ol class="bosqich-ichi">
+      <li class="bq faol" data-bq="kiritish"><i>1</i><span>Kiritish</span></li>
+      <li class="bq" data-bq="tahlil"><i>2</i><span>Tahlil</span></li>
+      <li class="bq" data-bq="portret"><i>3</i><span>Natija</span></li>
+    </ol>
+  </nav>
+</header>
+
+<main id="ilova">
+
+  <!-- ══════════ 1. BLANKA ══════════ -->
+  <section class="ekran faol" id="ekran-kiritish" tabindex="-1">
+    <div class="blok-bosh">
+      <span class="ustki-yozuv">Kontent ro'yxati — blanka</span>
+      <h1>So'nggi ko'rgan <em>3–5 ta videongiz</em> tahlil qilinadi</h1>
+      <p class="kirish-matn">
+        <b>Instagram, YouTube, TikTok yoki Facebook</b> videolarining havolasini kiriting —
+        quyidagi ro'yxat to'lgach tahlil boshlanadi. Har bir video kadrlari,
+        ovozi va matni bo'yicha alohida ko'rib chiqiladi.
+      </p>
+    </div>
+
+    <div class="kiritish-varaq">
+      <div class="kiritgich">
+        <label class="korinmas" for="link">Video havolasi</label>
+        <input type="url" id="link" inputmode="url" autocomplete="off" spellcheck="false"
+               placeholder="instagram.com / youtube.com / tiktok.com ...">
+        <button class="tugma" id="qosh-tugma" type="button">Qo'shish</button>
+      </div>
+
+      <ul class="royxat" id="royxat"></ul>
+
+      <p class="eslatma">
+        <b>Ko'rsatma:</b> Ilovada videoni ochib "Share &rarr; Copy link"
+        (Ulashish &rarr; Havolani nusxalash) tanlang. To'rt platformadan aralash
+        havolalarni birdan nusxalab qo'ysangiz ham bo'ladi &mdash; tizim ularni
+        ajratib oladi.
+      </p>
+    </div>
+
+    <div id="xato-kiritish" role="alert"></div>
+
+    <footer class="aloqa">
+      <div class="aloqa-nom">Mas'ul shaxs</div>
+      <div class="aloqa-ism">F.I.O. (sozlanadi)</div>
+      <a class="aloqa-tel" href="tel:+998000000000">+998 00 000-00-00</a>
+    </footer>
+
+    <div class="harakat" id="harakat">
+      <div class="harakat-ichi">
+        <div class="harakat-malumot">
+          <b id="harakat-son">0 / 5</b>
+          <span id="harakat-izoh">Kamida 3 ta havola kerak</span>
+        </div>
+        <button class="tugma asosiy" id="boshla-tugma" type="button" disabled>
+          Tahlilni boshlash
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ 2. PROTOKOL ══════════ -->
+  <section class="ekran" id="ekran-tahlil" tabindex="-1">
+    <div class="blok-bosh">
+      <span class="ustki-yozuv">Tahlil protokoli</span>
+      <div class="foiz-qator">
+        <span class="foiz-katta" id="katta-foiz">0%</span>
+        <span class="foiz-tag" id="katta-tag">0 / 5</span>
+      </div>
+      <div class="jarayon-yol"><i id="jarayon-bar"></i></div>
+      <div class="bosqich" id="bosqich" aria-live="polite">Boshlanmoqda...</div>
+      <div class="bosqich-izoh" id="bosqich-izoh"></div>
+    </div>
+
+    <div class="plitkalar-orin" id="plitkalar-orin">
+      <div class="plitkalar" id="plitkalar"></div>
+    </div>
+
+    <p class="kutish" id="kutish"></p>
+    <button class="tugma bekor" id="bekor-tugma" type="button">Tahlilni to'xtatish</button>
+    <div id="xato-tahlil" role="alert"></div>
+  </section>
+
+  <!-- ══════════ 3. GUVOHNOMA ══════════ -->
+  <section class="ekran" id="ekran-portret" tabindex="-1">
+    <div id="portret"></div>
+    <button class="tugma bekor" id="qayta-tugma" type="button"
+            style="border-color:var(--chiziq2);color:var(--matn);margin-top:20px">
+      Yangi tahlil boshlash
+    </button>
+  </section>
+
+</main>
+
+<div class="parda" id="parda"></div>
+<div class="varaq" id="varaq" role="dialog" aria-modal="true" aria-hidden="true"
+     aria-label="Video tafsiloti" tabindex="-1">
+  <div class="varaq-bosh">
+    <div class="tutqich"></div>
+    <button class="varaq-yop" id="varaq-yop" type="button" aria-label="Yopish">&times;</button>
+  </div>
+  <div id="varaq-ichi"></div>
+</div>
+
+<script>
+"use strict";
+const $ = (id) => document.getElementById(id);
+
+const QAROR_NOM = {BOR:"Aniqlandi", QISMAN:"Qisman aniqlandi", YOQ:"Aniqlanmadi"};
+const MANBA_NOM = {kadr:"KADR", ovoz:"OVOZ", matn:"MATN"};
+// To'rt platforma — backend'dagi _PLATFORMALAR bilan bir xil.
+const HAVOLA = /https?:\/\/(?:www\.|m\.|vm\.|vt\.|web\.|fb\.)?(?:instagram\.com|instagr\.am|ig\.me|youtube\.com|youtu\.be|youtube-nocookie\.com|tiktok\.com|facebook\.com|fb\.watch|fb\.me)\/[^\s"'<>]+/gi;
+
+/* Havoladan (platforma, kod) ajratadi. Kod dedup uchun — backend kaliti bilan
+   mos: "instagram:CODE" / "youtube:ID" / "tiktok:ID". */
+function havolaKalit(u){
+  const s = String(u);
+  let m;
+  if(/instagram\.com|instagr\.am|ig\.me/i.test(s)){
+    m = s.match(/\/(?:reel|reels|p|tv)\/([A-Za-z0-9_-]{5,})/i);
+    return m ? {p:"instagram", kod:m[1]} : {p:"instagram", kod:null};
+  }
+  if(/youtube\.com|youtu\.be/i.test(s)){
+    m = s.match(/(?:shorts\/|watch\?v=|youtu\.be\/|embed\/|\/v\/)([A-Za-z0-9_-]{6,})/i);
+    return m ? {p:"youtube", kod:m[1]} : {p:"youtube", kod:null};
+  }
+  if(/tiktok\.com/i.test(s)){
+    m = s.match(/\/video\/(\d{6,})|\/(?:t|v)\/([A-Za-z0-9]{5,})|vm\.tiktok\.com\/([A-Za-z0-9]{5,})/i);
+    return m ? {p:"tiktok", kod:(m[1]||m[2]||m[3])} : {p:"tiktok", kod:null};
+  }
+  if(/facebook\.com|fb\.watch|fb\.me/i.test(s)){
+    m = s.match(/\/(?:reel|videos|watch)\/?\??v?=?(\d{6,})|fb\.watch\/([A-Za-z0-9_-]{5,})|\/videos\/([A-Za-z0-9._-]{5,})/i);
+    return m ? {p:"facebook", kod:(m[1]||m[2]||m[3])} : {p:"facebook", kod:null};
+  }
+  return {p:"", kod:null};
+}
+const PLATFORMA_BELGI = {
+  instagram:{nom:"Instagram", ico:"IG"},
+  youtube:{nom:"YouTube", ico:"YT"},
+  tiktok:{nom:"TikTok", ico:"TT"},
+  facebook:{nom:"Facebook", ico:"FB"}
+};
+
+/* Front va API alohida domenda turishi mumkin:
+   front  -> vatan.example.uz
+   API    -> vatanapi.example.uz
+   Bo'sh qoldirilsa, so'rovlar shu domenning o'ziga ketadi. */
+const API = String((window.VATAN_API || "")).replace(/\/+$/, "");
+
+let KERAK_MIN = 3;           // eng kam havola (serverdan yangilanadi)
+let KERAK_MAX = 5;           // eng ko'p havola (blanka shuncha qatorli)
+let linklar = [];
+let seansId = null;
+let oxirgiSeans = null;
+
+const him = (s) => String(s == null ? "" : s)
+  .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+
+const KAM_HARAKAT = window.matchMedia
+  && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* Rasmiy hujjat rekvizitlari: raqam seans identifikatoridan olinadi —
+   o'ylab topilmaydi, shu tahlilga bog'langan bo'ladi. */
+function hujjatRaqami(){
+  const x = (seansId || "").slice(0, 6).toUpperCase();
+  return "№ " + (x || "——————");
+}
+function bugungiSana(){
+  const d = new Date();
+  const ikki = (v) => String(v).padStart(2, "0");
+  return ikki(d.getDate()) + "." + ikki(d.getMonth() + 1) + "." + d.getFullYear();
+}
+
+function bosqichBelgila(nom){
+  const tartib = ["kiritish", "tahlil", "portret"];
+  const joriy = tartib.indexOf(nom);
+  document.querySelectorAll(".bq").forEach((el, i) => {
+    el.classList.toggle("tugagan", i < joriy);
+    el.classList.toggle("faol", i === joriy);
+    el.setAttribute("aria-current", i === joriy ? "step" : "false");
+  });
+}
+
+function ekran(nom){
+  bosqichBelgila(nom);
+  document.querySelectorAll(".ekran").forEach(e => e.classList.remove("faol"));
+  const yangi = $("ekran-" + nom);
+  yangi.classList.add("faol");
+  window.scrollTo({top:0, behavior: KAM_HARAKAT ? "auto" : "smooth"});
+  // Fokusni yangi ekranga ko'chiramiz: klaviatura foydalanuvchisi ro'yxat
+  // boshidan boshlaydi, skrin-rider esa yangi bo'limni e'lon qiladi.
+  setTimeout(() => yangi.focus({preventScroll:true}), 40);
+}
+
+function xatoKorsat(joy, matn){
+  $(joy).innerHTML = '<div class="xato-karta">' + him(matn) + "</div>";
+}
+
+/* ── Raqamni sanab ko'tarish ──
+   requestAnimationFrame fonda turgan tabda umuman ishlamaydi, shuning uchun
+   oxirida setTimeout bilan yakuniy qiymatni majburan yozamiz. Aks holda
+   foydalanuvchi boshqa tabga o'tib qaytsa, raqam 0 da qotib qoladi. */
+function sana(el, oxir, vaqt = 1100, qoshimcha = ""){
+  if(KAM_HARAKAT){ el.textContent = oxir + qoshimcha; return; }
+  const bosh = performance.now();
+  let tugadi = false;
+  function qadam(hozir){
+    if(tugadi) return;
+    const p = Math.min(1, (hozir - bosh) / vaqt);
+    const yumshoq = 1 - Math.pow(1 - p, 3);
+    el.textContent = Math.round(oxir * yumshoq) + qoshimcha;
+    if(p < 1) requestAnimationFrame(qadam); else tugadi = true;
+  }
+  requestAnimationFrame(qadam);
+  setTimeout(() => { tugadi = true; el.textContent = oxir + qoshimcha; }, vaqt + 80);
+}
+
+/* ══════════ 1-EKRAN ══════════ */
+
+/* Linkning FARQLI qismi — oxiridagi kod. To'liq URL ko'rsatilsa, tor ekranda
+   hammasi "instagram.com/reel/D..." bo'lib bir xil ko'rinadi va foydalanuvchi
+   qaysi birini o'chirayotganini bilmaydi. */
+function linkYorlig(L){
+  const k = havolaKalit(L);
+  const b = PLATFORMA_BELGI[k.p];
+  if(b){
+    const badge = '<span class="pbadge ' + k.p + '">' + b.ico + "</span>";
+    return badge + "<i>" + him(b.nom) + " · </i>" +
+           him(k.kod || L.replace(/^https?:\/\/(www\.)?/, ""));
+  }
+  return him(L.replace(/^https?:\/\/(www\.)?/, ""));
+}
+
+function royxatChiz(yangiDan){
+  // Shu render paytidagi nusxa: o'chirish INDEKS emas, QIYMAT bo'yicha —
+  // animatsiya davomida ro'yxat siljisa noto'g'ri element o'chmasin.
+  const joriy = linklar.slice();
+
+  // BLANKA: KERAK_MAX ta qator oldindan chizilgan. Havola qo'shilganda
+  // navbatdagi bo'sh qator "to'ldiriladi" — rasmiy blanka hissi.
+  let h = "";
+  for(let i = 0; i < KERAK_MAX; i++){
+    const L = joriy[i];
+    const raqam = '<span class="qator-raqam">' + String(i + 1).padStart(2, "0") + "</span>";
+    if(L !== undefined){
+      const yangi = (yangiDan !== undefined && i >= yangiDan);
+      h += '<li class="qator' + (yangi ? " yangi" : "") + '"' +
+        (yangi ? ' style="animation-delay:' + ((i - yangiDan) * 55) + 'ms"' : "") + ">" +
+        raqam +
+        '<span class="link-matn">' + linkYorlig(L) + "</span>" +
+        '<button class="ochir" type="button" data-i="' + i + '" ' +
+        'aria-label="' + (i + 1) + '-havolani o\'chirish"><span>&times;</span></button></li>';
+    }else{
+      h += '<li class="qator bosh" aria-label="' + (i + 1) + '-o\'rin bo\'sh">' +
+        raqam + '<span class="bosh-chiziq" aria-hidden="true"></span></li>';
+    }
+  }
+  $("royxat").innerHTML = h;
+
+  $("royxat").querySelectorAll(".ochir").forEach(b => {
+    b.onclick = () => {
+      if(b.dataset.band) return;
+      b.dataset.band = "1";
+      const qiymat = joriy[Number(b.dataset.i)];
+      b.closest("li").classList.add("uchdi");
+      setTimeout(() => {
+        const j = linklar.indexOf(qiymat);
+        if(j !== -1) linklar.splice(j, 1);
+        royxatChiz();
+      }, 250);
+    };
+  });
+  hisobYangila();
+}
+
+function hisobYangila(){
+  const n = linklar.length;
+  const son = $("harakat-son");
+  if(son) son.textContent = n + " / " + KERAK_MAX;
+  const izoh = $("harakat-izoh");
+  const panel = $("harakat");
+  const tugma = $("boshla-tugma");
+  if(n < KERAK_MIN){
+    if(izoh) izoh.textContent = "Kamida " + KERAK_MIN + " ta havola kerak (" +
+      (KERAK_MIN - n) + " ta qoldi)";
+    if(panel) panel.classList.remove("tayyor");
+    tugma.disabled = true;
+  }else{
+    if(izoh) izoh.textContent = n + " ta havola — tahlilga tayyor" +
+      (n < KERAK_MAX ? " (" + KERAK_MAX + " tagacha qo'shsangiz bo'ladi)" : "");
+    if(panel) panel.classList.add("tayyor");
+    tugma.disabled = false;
+  }
+}
+
+const tozala = (s) => String(s).trim().split("?")[0].replace(/\/+$/, "");
+
+/* Havolani saqlash uchun kanonik shaklga keltiradi. MUHIM: YouTube
+   watch?v=ID da video ID query'da — uni kesib tashlab bo'lmaydi.
+   Boshqa hollarda kuzatuv parametrlari (?igsh=...) olib tashlanadi. */
+function kanonik(u){
+  const k = havolaKalit(u);
+  if(k.p === "youtube" && k.kod) return "https://www.youtube.com/watch?v=" + k.kod;
+  if(k.p === "instagram" && k.kod) return "https://www.instagram.com/reel/" + k.kod;
+  if(k.p === "facebook" && k.kod && /watch/i.test(u) && !/\/watch\//i.test(u))
+    return "https://www.facebook.com/watch/?v=" + k.kod;
+  return tozala(u);
+}
+/* Takrorni shortcode bo'yicha solishtiramiz — server ham aynan shu kalitni
+   ishlatadi. Aks holda www. bor/yo'q yoki harf registri farq qilsa, bir xil
+   video ikki marta ro'yxatga tushardi. */
+const solish = (u) => {
+  const k = havolaKalit(u);
+  return (k.p && k.kod) ? (k.p + ":" + k.kod)
+                        : tozala(u).toLowerCase().replace(/^https?:\/\/(www\.)?/, "");
+};
+
+function linkQosh(matn){
+  const topilgan = String(matn).match(HAVOLA) || [];
+  const xom = topilgan.length ? topilgan : [String(matn).trim()];
+  let qoshildi = 0, takror = 0, sigmadi = 0;
+
+  for(const x of xom){
+    if(!havolaKalit(x).p){
+      xatoKorsat("xato-kiritish", "Bu Instagram, YouTube yoki TikTok havolasiga o'xshamaydi:\n" + tozala(x));
+      return;
+    }
+    const url = kanonik(x);
+    if(!url) continue;
+    if(linklar.length >= KERAK_MAX){ sigmadi++; continue; }
+    if(linklar.some(L => solish(L) === solish(url))){ takror++; continue; }
+    linklar.push(url);
+    qoshildi++;
+  }
+
+  $("xato-kiritish").innerHTML = "";
+  const xabarlar = [];
+  if(takror) xabarlar.push(takror + " ta havola ro'yxatda allaqachon mavjud");
+  if(sigmadi) xabarlar.push(sigmadi + " ta havola qabul qilinmadi (eng ko'pi " + KERAK_MAX + " ta)");
+  if(xabarlar.length && !qoshildi) xatoKorsat("xato-kiritish", xabarlar.join(", ") + ".");
+  else if(xabarlar.length) eslatmaKorsat(xabarlar.join(", ") + ".");
+
+  if(qoshildi){ $("link").value = ""; royxatChiz(linklar.length - qoshildi); }
+}
+
+function eslatmaKorsat(matn){
+  $("xato-kiritish").innerHTML =
+    '<div class="ogoh-karta">' + him(matn) + "</div>";
+  setTimeout(() => { $("xato-kiritish").innerHTML = ""; }, 5000);
+}
+
+$("qosh-tugma").onclick = () => linkQosh($("link").value);
+$("link").addEventListener("keydown", (e) => {
+  if(e.key === "Enter"){ e.preventDefault(); linkQosh($("link").value); }
+});
+$("link").addEventListener("paste", (e) => {
+  const matn = (e.clipboardData || window.clipboardData).getData("text");
+  if((matn.match(HAVOLA) || []).length > 1){ e.preventDefault(); linkQosh(matn); }
+});
+
+/* ══════════ 2-EKRAN ══════════ */
+
+function plitkalarChiz(){
+  $("plitkalar").innerHTML = linklar.map((L, i) =>
+    '<div class="pqator" id="pl-' + i + '">' +
+      '<span class="qator-raqam">' + String(i + 1).padStart(2, "0") + "</span>" +
+      '<span class="pq-malumot">' +
+        '<b class="pq-yol">' + linkYorlig(L) + "</b>" +
+        '<span class="pq-qadam">Navbatda</span>' +
+      "</span>" +
+      '<span class="pq-muhr kutmoqda" aria-hidden="true"></span>' +
+    "</div>").join("");
+}
+
+function tahlilYangila(s){
+  const jami = s.jami || linklar.length || KERAK_MAX;
+  const tugagan = s.tugagan || 0;
+
+  s.videolar.forEach((v, i) => {
+    const el = $("pl-" + i);
+    if(!el) return;
+
+    let sinf = "kutmoqda", qadam = "Navbatda", muhrM = "";
+    let yorliq = (i + 1) + "-video: kutmoqda";
+    if(v.holat === "jarayonda"){
+      sinf = "jarayonda";
+      qadam = v.qadam_matn || "Tahlil qilinmoqda";
+      yorliq = (i + 1) + "-video: " + qadam;
+    }else if(v.holat === "xato"){
+      sinf = "xato"; qadam = "Ochilmadi"; muhrM = "!";
+      yorliq = (i + 1) + "-video: ochilmadi";
+    }else if(v.holat === "tayyor"){
+      // Sxemadan chetga chiqqan qiymat classList.add() da DOMException
+      // tashlab siklni o'ldirmasin.
+      sinf = QAROR_NOM[v.qaror] ? v.qaror : "YOQ";
+      qadam = QAROR_NOM[v.qaror] || "Aniqlanmadi";
+      muhrM = String(Number(v.ball) || 0);
+      yorliq = (i + 1) + "-video: " + qadam + ", " + v.ball + " ball";
+    }
+
+    // IDEMPOTENT: holat o'zgargandagina DOM'ga tegamiz — aks holda muhr
+    // animatsiyasi har pollingda (1.4 s) qayta bosilaverardi.
+    if(el.dataset.sinf !== sinf){
+      el.dataset.sinf = sinf;
+      el.className = "pqator " + sinf;
+      const m = el.querySelector(".pq-muhr");
+      if(m){
+        m.className = "pq-muhr " + sinf;
+        m.textContent = muhrM;
+        if(sinf === "BOR" || sinf === "QISMAN" || sinf === "YOQ" || sinf === "xato"){
+          m.classList.add("bosildi");   // muhr bosilish animatsiyasi
+        }
+      }
+    }
+    // Qadam matni holat ichida ham o'zgaradi (yuklash -> kadr -> ovoz...)
+    const q = el.querySelector(".pq-qadam");
+    if(q && q.textContent !== qadam) q.textContent = qadam;
+    el.setAttribute("aria-label", yorliq);
+    el.setAttribute("title", yorliq);
+  });
+
+  const portretda = s.bosqich === "portret";
+  const foiz = portretda ? 100 : Math.round(tugagan / jami * 100);
+  const bar = $("jarayon-bar");
+  if(bar) bar.style.width = foiz + "%";
+  const orin = $("plitkalar-orin");
+  if(orin) orin.classList.toggle("tugagan", tugagan >= jami || portretda);
+  const oldingi = parseInt($("katta-foiz").textContent, 10) || 0;
+  if(oldingi !== foiz) sana($("katta-foiz"), foiz, 500, "%");
+
+  if(portretda){
+    $("katta-tag").textContent = "yakun";
+    $("bosqich").textContent = "Xulosa shakllantirilmoqda";
+    $("bosqich-izoh").textContent = jami + " ta natija birlashtirilmoqda";
+    $("kutish").textContent = "Deyarli tayyor.";
+  }else{
+    $("katta-tag").textContent = tugagan + " / " + jami;
+    $("bosqich").textContent = tugagan >= jami ? "Yakunlanmoqda" : "Videolar tahlil qilinmoqda";
+    $("bosqich-izoh").textContent = "";
+    $("kutish").textContent = qolganVaqt(tugagan, jami);
+  }
+}
+
+/* Qolgan vaqt tugagan videolarning HAQIQIY tezligidan hisoblanadi.
+   Hali bittasi ham tugamagan bo'lsa - taxmin qilmaymiz. */
+let tahlilBoshlandi = 0;
+
+function qolganVaqt(tugagan, jami){
+  const eslatma = " Sahifani yopsangiz ham tahlil davom etadi \u2014 qaytib kirsangiz shu yerdan davom etadi.";
+  if(!tahlilBoshlandi || tugagan < 1){
+    return "Har bir video ~30-60 soniya oladi." + eslatma;
+  }
+  const otgan = (Date.now() - tahlilBoshlandi) / 1000;
+  const qolgan = Math.round(otgan / tugagan * (jami - tugagan));
+  if(qolgan <= 0) return "Yakunlanmoqda...";
+  const daq = Math.floor(qolgan / 60), son = qolgan % 60;
+  const matn = daq ? (daq + " daqiqa" + (son ? " " + son + " soniya" : "")) : (son + " soniya");
+  return "Taxminan " + matn + " qoldi." + eslatma;
+}
+
+/* Har bir tahlil o'z raqamini oladi. Foydalanuvchi orqaga qaytib yangisini
+   boshlasa, eski polling sikli shu raqam bo'yicha o'zini to'xtatadi —
+   aks holda ikkita sikl bir vaqtda ekranni yozib, holat chalkashadi. */
+let oqimRaqami = 0;
+
+async function jsonOl(manzil, sozlama){
+  const javob = await fetch(API + manzil, sozlama);
+  let malumot = null;
+  try{ malumot = await javob.json(); }
+  catch(e){
+    throw new Error("Server tushunarsiz javob qaytardi (HTTP " + javob.status + ").");
+  }
+  if(!javob.ok) throw new Error(malumot && malumot.xato ? malumot.xato :
+    "Server xatosi (HTTP " + javob.status + ").");
+  return malumot;
+}
+
+function tahlilXatosi(matn){
+  $("xato-tahlil").innerHTML =
+    '<div class="xato-karta">' + him(matn) + "</div>" +
+    '<button class="tugma asosiy" id="orqaga-tugma" type="button">Havolalarga qaytish</button>';
+  $("orqaga-tugma").onclick = kiritishgaQayt;
+}
+
+function kiritishgaQayt(){
+  oqimRaqami++;                       // ishlab turgan siklni to'xtatadi
+  seansId = null;
+  // localStorage ATAYLAB tozalanmaydi: tarmoq uzilib xato ko'rsatilgan
+  // bo'lsa ham, seans serverda davom etayotgan bo'lishi mumkin — sahifa
+  // yangilanganda foydalanuvchi to'langan tahlilga qayta ulanadi.
+  $("xato-tahlil").innerHTML = "";
+  $("xato-kiritish").innerHTML = "";
+  ekran("kiritish");
+}
+
+async function seansBoshla(){
+  $("xato-kiritish").innerHTML = "";
+  $("xato-tahlil").innerHTML = "";
+  plitkalarChiz();
+  ekran("tahlil");
+  $("bosqich").textContent = "Boshlanmoqda...";
+  $("bosqich-izoh").textContent = "";
+
+  const men = ++oqimRaqami;
+  tahlilBoshlandi = Date.now();
+  // Oldingi tahlildan qolgan holatni tozalaymiz — aks holda progress 100%
+  // dan boshlanib, keyin orqaga qaytadi.
+  const bar = $("jarayon-bar");
+  if(bar){ bar.style.transition = "none"; bar.style.width = "0%";
+           setTimeout(() => { bar.style.transition = ""; }, 60); }
+  $("katta-foiz").textContent = "0%";
+  $("katta-tag").textContent = "0 / " + linklar.length;
+  $("kutish").textContent = "";
+  try{
+    const boshlangich = await jsonOl("/seans", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({linklar: linklar}),
+    });
+    if(men !== oqimRaqami) return;
+    seansId = boshlangich.seans_id;
+    seansniSaqla(seansId, linklar);
+    await seansniKuzat(men);
+  }catch(e){
+    if(men === oqimRaqami) tahlilXatosi(e.message || String(e));
+  }
+}
+
+async function seansniKuzat(men){
+  let uzilish = 0;
+  while(men === oqimRaqami){
+    await new Promise(r => setTimeout(r, 1400));
+    if(men !== oqimRaqami) return;
+
+    // Bitta tarmoq uzilishi butun kuzatuvni o'ldirmasin: tahlil serverda
+    // davom etyapti, faqat so'rov yetib bormadi. 5 marta ketma-ket
+    // muvaffaqiyatsiz bo'lsagina taslim bo'lamiz.
+    let s;
+    try{
+      s = await jsonOl("/seans/" + seansId);
+      uzilish = 0;
+    }catch(e){
+      if(/404|topilmadi/i.test(e.message || "")) throw e;
+      if(++uzilish >= 5) throw new Error(
+        "Server bilan aloqa uzildi (5 marta urinildi).\n" + (e.message || ""));
+      $("bosqich-izoh").textContent =
+        "Aloqa tiklanmoqda... (" + uzilish + "/5)";
+      continue;
+    }
+    if(men !== oqimRaqami) return;
+    // Avval ekranni oxirgi holatga keltiramiz, keyingina xatoni ko'taramiz —
+    // aks holda oxirgi plitka "jarayonda"da qotib qoladi.
+    if(s.videolar) tahlilYangila(s);
+    if(s.xato && s.holat !== "jarayonda"){
+      saqlanganSeansniOchir();
+      throw new Error(s.xato);
+    }
+    if(s.holat === "tayyor"){
+      oxirgiSeans = s;
+      saqlanganSeansniOchir();
+      setTimeout(() => {
+        if(men === oqimRaqami){ portretChiz(s); ekran("portret"); }
+      }, 600);
+      return;
+    }
+  }
+}
+
+/* ── Seansni saqlash: tahlil 3-5 daqiqa davom etadi, telefon uxlab qolsa yoki
+      sahifa yangilansa — qaytib ulanamiz. ── */
+const SAQLASH_KALITI = "vatan-seans";
+
+function seansniSaqla(id, royxat){
+  try{ localStorage.setItem(SAQLASH_KALITI, JSON.stringify({id, royxat, vaqt: Date.now()})); }
+  catch(e){}
+}
+function saqlanganSeansniOchir(){
+  try{ localStorage.removeItem(SAQLASH_KALITI); }catch(e){}
+}
+async function seansniTikla(){
+  let saqlangan = null;
+  try{ saqlangan = JSON.parse(localStorage.getItem(SAQLASH_KALITI) || "null"); }catch(e){}
+  if(!saqlangan || !saqlangan.id) return false;
+  if(Date.now() - (saqlangan.vaqt || 0) > 30 * 60 * 1000){ saqlanganSeansniOchir(); return false; }
+
+  try{
+    const s = await jsonOl("/seans/" + saqlangan.id);
+    if(s.xato && !s.videolar){ saqlanganSeansniOchir(); return false; }
+    seansId = saqlangan.id;
+    tahlilBoshlandi = saqlangan.vaqt || 0;
+    linklar = saqlangan.royxat || [];
+    royxatChiz();
+    plitkalarChiz();
+    ekran("tahlil");
+    tahlilYangila(s);
+    if(s.holat === "tayyor"){
+      oxirgiSeans = s; saqlanganSeansniOchir();
+      portretChiz(s); ekran("portret");
+    }else if(s.holat === "xato"){
+      saqlanganSeansniOchir(); tahlilXatosi(s.xato);
+    }else{
+      seansniKuzat(++oqimRaqami).catch(e => tahlilXatosi(e.message || String(e)));
+    }
+    return true;
+  }catch(e){ saqlanganSeansniOchir(); return false; }
+}
+
+$("bekor-tugma").onclick = async () => {
+  const t = $("bekor-tugma");
+  t.disabled = true; t.textContent = "Bekor qilinmoqda...";
+  try{
+    if(seansId) await fetch(API + "/seans/" + seansId + "/bekor", {method:"POST"});
+  }catch(e){}
+  // Boshlangan videolar tugaydi, navbatdagilari umuman boshlanmaydi.
+  saqlanganSeansniOchir();
+  kiritishgaQayt();
+  t.disabled = false; t.textContent = "Tahlilni bekor qilish";
+};
+
+$("boshla-tugma").onclick = seansBoshla;
+$("qayta-tugma").onclick = () => {
+  linklar = []; royxatChiz();
+  kiritishgaQayt();
+};
+
+/* ══════════ 3-EKRAN ══════════ */
+
+function portretChiz(s){
+  const p = s.portret || {};
+  const st = p.statistika || {};
+  const jami = st.jami || 1;
+  let h = "";
+
+  // ── Guvohnoma sarlavhasi: to'liq enli navy, guilloché, muhr ──
+  h += '<header class="sert-bosh">';
+  h += '<span class="tamg">Tahlil natijasi</span>';
+  h += '<div class="rekvizit"><span>' + him(hujjatRaqami()) + "</span>" +
+       "<span>" + him(bugungiSana()) + "</span></div>";
+  h += '<h2 class="portret-nom">' + him(p.sarlavha || "Xulosa") + "</h2>";
+  h += '<p class="portret-jumla">' + him(p.bir_jumla || "") + "</p>";
+  h += '<div class="sert-muhr" aria-hidden="true">\u2713</div>';
+  h += "</header>";
+
+  // ── Ball paneli ──
+  h += '<div class="sert-ball">';
+  h += '<div class="katta-raqam" id="ort-ball">0</div>';
+  h += '<div class="ball-yorliq">o\'rtacha ko\'rsatkich (0\u2013100)</div>';
+  h += '<div class="taqsim">' +
+       '<span class="s-bor" id="s-bor"><b>' + (st.bor || 0) + "</b></span>" +
+       '<span class="s-qisman" id="s-qisman"><b>' + (st.qisman || 0) + "</b></span>" +
+       '<span class="s-yoq" id="s-yoq"><b>' + (st.yoq || 0) + "</b></span></div>";
+  h += '<div class="afsona">' +
+       '<span><i style="background:#0d6d37"></i>Aniqlandi \u2014 ' + (st.bor || 0) + " ta</span>" +
+       '<span><i style="background:#7d5100"></i>Qisman \u2014 ' + (st.qisman || 0) + " ta</span>" +
+       '<span><i style="background:#4b5d70"></i>Aniqlanmadi \u2014 ' + (st.yoq || 0) + " ta</span></div>";
+  h += "</div>";
+
+  // ── Gazeta bo'limlari: quti YO'Q, tipografik ritm ──
+  if(p.tavsif){
+    h += "<h3>Tasvir</h3><p class='matn'>" + him(p.tavsif) + "</p>";
+  }
+  if((p.asosiy_mavzular || []).length){
+    h += "<h3>Takrorlangan mavzular</h3><div class='chiplar'>" +
+      p.asosiy_mavzular.map((m, i) =>
+        '<span class="chip" style="animation-delay:' + (i * 55) + 'ms">' + him(m) + "</span>"
+      ).join("") + "</div>";
+  }
+  if((p.kuzatuvlar || []).length){
+    h += "<h3>Kuzatuvlar</h3><ol class='bandlar'>" + p.kuzatuvlar.map((k, i) =>
+      '<li class="kuzatuv" style="animation-delay:' + (i * 80) + 'ms"><b>' +
+      him(k.sarlavha) + "</b><p>" + him(k.izoh) + "</p></li>").join("") + "</ol>";
+  }
+  if(p.ziddiyat){
+    h += "<h3>Qarama-qarshilik</h3><p class='matn'>" + him(p.ziddiyat) + "</p>";
+  }
+  if((st.ramzlar || []).length){
+    h += "<h3>Eng ko'p uchragan ramzlar</h3><div class='chiplar'>" +
+      st.ramzlar.map((r, i) =>
+        '<span class="chip" style="animation-delay:' + (i * 45) + 'ms">' +
+        him(r.nom) + " \u00b7 " + r.soni + "</span>").join("") + "</div>";
+  }
+
+  // ── Videolar jurnali ──
+  h += "<h3>Videolar bo'yicha</h3>";
+  (s.videolar || []).forEach((v, i) => {
+    const xato = v.holat === "xato";
+    h += '<button class="vkarta" type="button" data-i="' + i + '" style="animation-delay:' + (i * 50) + 'ms">' +
+      '<span class="qator-raqam">' + String(i + 1).padStart(2, "0") + "</span>" +
+      '<span class="vball ' + (xato ? "xato" : (QAROR_NOM[v.qaror] ? v.qaror : "YOQ")) + '">' +
+      (xato ? "!" : (Number(v.ball) || 0)) + "</span>" +
+      '<span class="vmatn"><b>' +
+      him(xato ? "Ochilmadi" : (QAROR_NOM[v.qaror] || v.qaror)) +
+      (v.muallif ? " \u00b7 @" + him(v.muallif) : "") + "</b><span>" +
+      him(xato ? (v.xato || "").split("\n")[0] : (v.mavzu || v.link)) +
+      "</span></span><span class='vstrelka'>\u203a</span></button>";
+  });
+
+  // ── Mayda harf: raqamlar koddan, modeldan emas ──
+  const xatolar = (s.videolar || []).filter(v => v.holat === "xato").length;
+  h += '<div class="halol"><b>Asoslanganlik</b>' +
+       him(jami) + " ta video tahlil qilindi" +
+       (xatolar ? ", " + xatolar + " tasi ochilmadi" : "") + ". " +
+       him(p.cheklov || "Namuna kichik \u2014 bu shaxsiyat testi emas, faqat shu videolar tasviri.") +
+       "</div>";
+
+  $("portret").innerHTML = h;
+
+  // Animatsiyalar. rAF emas, setTimeout — fon tabda ham ishlaydi.
+  setTimeout(() => {
+    sana($("ort-ball"), st.ortacha_ball || 0, 1300);
+    $("s-bor").style.width = ((st.bor || 0) / jami * 100) + "%";
+    $("s-qisman").style.width = ((st.qisman || 0) / jami * 100) + "%";
+    $("s-yoq").style.width = ((st.yoq || 0) / jami * 100) + "%";
+  }, 40);
+
+  $("portret").querySelectorAll(".vkarta").forEach(b => {
+    b.onclick = () => varaqOch(Number(b.dataset.i));
+  });
+}
+
+/* ══════════ Pastki varaq ══════════ */
+
+let varaqRaqami = 0;   // tez-tez bosilganda eski javob yangisini bosib ketmasin
+
+async function varaqOch(indeks){
+  const v = ((oxirgiSeans && oxirgiSeans.videolar) || [])[indeks] || {};
+  const men = ++varaqRaqami;
+  let h = "";
+
+  if(v.holat === "xato"){
+    h = "<h3 style='margin-top:0'>" + (indeks + 1) + "-video ochilmadi</h3>" +
+        '<div class="xato-karta">' + him(v.xato) + "</div>";
+    $("varaq-ichi").innerHTML = h;
+    pardaOch();
+    return;
+  }
+
+  $("varaq-ichi").innerHTML = "<p class='matn'>Yuklanmoqda...</p>";
+  pardaOch();
+
+  let n = null;
+  try{
+    n = await jsonOl("/seans/" + seansId + "/video/" + indeks);
+  }catch(e){
+    if(men !== varaqRaqami) return;
+    $("varaq-ichi").innerHTML =
+      "<h3 style='margin-top:0'>Tafsilotni ochib bo'lmadi</h3>" +
+      '<div class="xato-karta">' + him(e.message || String(e)) + "</div>";
+    return;
+  }
+  if(men !== varaqRaqami) return;
+  // Bo'sh javobni 0 ball / YO'Q qilib ko'rsatish — yolg'on ma'lumot.
+  if(!n || !n.qaror){
+    $("varaq-ichi").innerHTML =
+      "<h3 style='margin-top:0'>Tafsilot topilmadi</h3>" +
+      '<div class="xato-karta">Bu videoning saqlangan tahlili topilmadi. ' +
+      "Server qayta ishga tushirilgan bo'lishi mumkin.</div>";
+    return;
+  }
+
+  const m = n.manbalar || {};
+  const vid = n.video || {};
+
+  h += '<div style="display:flex;align-items:center;gap:13px;margin-bottom:16px">' +
+    '<span class="vball ' + (QAROR_NOM[n.qaror] ? n.qaror : "YOQ") +
+    '" style="width:56px;height:56px;font-size:18px">' +
+    (Number(n.ball) || 0) + "</span><div><b style='font-size:17px'>" +
+    him(QAROR_NOM[n.qaror] || n.qaror || "") + "</b><br>" +
+    "<span style='font-size:12.5px;color:var(--xira)'>Ishonch " +
+    (Number(n.ishonch) || 0) + "%" + (vid.muallif ? " · @" + him(vid.muallif) : "") +
+    "</span></div></div>";
+
+  if(n.mavzu) h += "<h3 style='margin-top:0'>Video haqida</h3><p class='matn'>" + him(n.mavzu) + "</p>";
+  if(n.xulosa) h += "<h3>Xulosa</h3><p class='matn'>" + him(n.xulosa) + "</p>";
+
+  if((n.ramzlar || []).length){
+    h += "<h3>Ramzlar</h3><div class='chiplar'>" +
+      n.ramzlar.map(r => '<span class="chip">' + him(r) + "</span>").join("") + "</div>";
+  }
+
+  const dalilRoyxat = (list) => '<ul class="dalil">' + list.map(d =>
+    '<li><span class="manba ' + him(d.manba) + '">' + (MANBA_NOM[d.manba] || him(d.manba)) +
+    "</span><span>" + him(d.izoh) +
+    (d.vaqt ? ' <span class="vaqt">(' + him(d.vaqt) + ")</span>" : "") +
+    "</span></li>").join("") + "</ul>";
+
+  if((n.dalillar || []).length) h += "<h3>Dalillar</h3>" + dalilRoyxat(n.dalillar);
+  if((n.qarshi_dalillar || []).length) h += "<h3>Qarshi dalillar</h3>" + dalilRoyxat(n.qarshi_dalillar);
+
+  h += '<div class="halol"><b>Nima asosida baholandi</b><br>' +
+    "Kadrlar: " + (m.kadrlar_soni || 0) + " ta · Ovoz matni: " +
+    (m.ovoz_bormi ? "bor" + (m.ovoz_tili ? " (" + him(m.ovoz_tili) + ")" : "")
+                  : "yo'q — " + him(m.ovoz_sababi || "sabab yo'q")) +
+    " · Caption: " + (m.caption_bormi ? "bor" : "yo'q") +
+    (n._narx ? "<br>Narx: $" + n._narx.dollar : "") +
+    (n._keshdan ? "<br>Avvalgi tahlildan (" + him(n._keshdan) + ")" : "") + "</div>";
+
+  if(n.ogohlantirish){
+    h += '<div class="halol" style="border-color:rgba(245,158,11,.35)">' +
+         him(n.ogohlantirish) + "</div>";
+  }
+
+  if((n.transkript || []).length){
+    h += "<details><summary>Ovoz transkripsiyasi (avtomatik)</summary><pre>" +
+      him(n.transkript.map(x => "[" + x.vaqt + "] " + x.matn).join("\n")) + "</pre></details>";
+  }
+  if(vid.caption){
+    h += "<details><summary>Caption matni</summary><pre>" + him(vid.caption) + "</pre></details>";
+  }
+  if(vid.link){
+    h += "<details><summary>Manba havolasi</summary><pre>" + him(vid.link) + "</pre></details>";
+  }
+
+  $("varaq-ichi").innerHTML = h;
+}
+
+let fokusOldin = null;
+
+function pardaOch(){
+  fokusOldin = document.activeElement;
+  $("parda").classList.add("ochiq");
+  $("varaq").classList.add("ochiq");
+  $("varaq").setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";      // orqadagi sahifa siljimasin
+  setTimeout(() => $("varaq").focus(), 60);
+}
+function pardaYop(){
+  if(!$("varaq").classList.contains("ochiq")) return;
+  $("parda").classList.remove("ochiq");
+  $("varaq").classList.remove("ochiq");
+  $("varaq").setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+  if(fokusOldin && fokusOldin.focus) fokusOldin.focus();   // fokus qaytadi
+  fokusOldin = null;
+}
+$("parda").onclick = pardaYop;
+$("varaq-yop").onclick = pardaYop;
+document.addEventListener("keydown", (e) => { if(e.key === "Escape") pardaYop(); });
+
+/* Fokus varaqdan tashqariga chiqib ketmasin */
+document.addEventListener("focusin", (e) => {
+  const v = $("varaq");
+  if(v.classList.contains("ochiq") && !v.contains(e.target)) v.focus();
+});
+
+/* ══════════ Muhit ══════════ */
+
+/* Serverdan faqat kerakli sozlamani olamiz (nechta video kerakligi).
+   Muhit holati haqidagi ogohlantirishlar interfeysda ko'rsatilmaydi —
+   tekshirish kerak bo'lsa API ning /tekshiruv marshruti bor. */
+async function muhitTekshir(){
+  try{
+    const m = await jsonOl("/tekshiruv");
+    if(m.video_min){ KERAK_MIN = m.video_min; }
+    if(m.video_max){ KERAK_MAX = m.video_max; }
+  }catch(e){}
+  finally{ royxatChiz(); hisobYangila(); }   // server javob bermasa ham hisob to'g'ri
+}
+
+/* Kirish splash — 3 soniya, keyin silliq yo'qoladi. JS ishlamay qolsa
+   ham (xato bo'lsa) splash abadiy qolmasin: mustaqil setTimeout ham bor. */
+(function splashniYop(){
+  const yop = () => { const el = $("splash"); if(el) el.classList.add("ketdi"); };
+  const kam = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  setTimeout(yop, kam ? 400 : 3000);
+})();
+
+(async function boshlash(){
+  royxatChiz();
+  await muhitTekshir();
+  await seansniTikla();       // yarim qolgan tahlil bo'lsa — davom ettiramiz
+})();
+</script>
+</body>
+</html>

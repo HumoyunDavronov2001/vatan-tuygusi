@@ -1,0 +1,91 @@
+# ──────────────────────────────────────────────────────────────────────────
+#  VATAN TUYG'USI — ishlab chiqarish to'plami
+#
+#  DIQQAT — SERVERDA BOSHQA DASTURLAR ISHLAYAPTI:
+#    boshqa loyihalar konteynerlari
+#    va ularning oldida turgan `caddy` (80/443 portlar unda).
+#
+#  Shuning uchun bu to'plam:
+#    * O'Z CADDY'SINI KO'TARMAYDI
+#    * HECH QANDAY HOST PORTINI BAND QILMAYDI (ports: yo'q, faqat expose)
+#    * Mavjud Caddy tarmog'iga qo'shiladi va u bizga proksi qiladi
+#
+#  Mavjud Caddyfile'ga ikkita blok qo'shiladi va `caddy reload` bajariladi —
+#  boshqa saytlar uzilmaydi.
+# ──────────────────────────────────────────────────────────────────────────
+
+services:
+
+  api:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+      args:
+        WHISPER_MODEL: ${VATAN_WHISPER_MODEL:-small}
+    image: vatan-api:1.0
+    container_name: vatan-api
+    restart: unless-stopped
+    environment:
+      VATAN_BACKEND: ${VATAN_BACKEND:-qoida}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      VATAN_FRONT_ORIGIN: ${VATAN_FRONT_ORIGIN:-https://vatan.example.uz}
+      VATAN_MODEL: ${VATAN_MODEL:-claude-opus-5}
+      VATAN_VIDEO_MIN: ${VATAN_VIDEO_MIN:-3}
+      VATAN_VIDEO_MAX: ${VATAN_VIDEO_MAX:-5}
+      VATAN_MIN_PORTRET: ${VATAN_MIN_PORTRET:-3}
+      VATAN_KADR_SONI: ${VATAN_KADR_SONI:-8}
+      VATAN_KADR_ULCHAM: ${VATAN_KADR_ULCHAM:-896}
+      VATAN_WHISPER_MODEL: ${VATAN_WHISPER_MODEL:-small}
+      VATAN_WHISPER_TIL: ${VATAN_WHISPER_TIL:-uz}
+      VATAN_PARALLEL: ${VATAN_PARALLEL:-2}
+      VATAN_MAX_SEANS: ${VATAN_MAX_SEANS:-50}
+      VATAN_SINOV_KALIT: ${VATAN_SINOV_KALIT:-}
+      VATAN_IG_COOKIES: ${VATAN_IG_COOKIES:-}
+      # Video yuklash proksisi (serverdagi WARP). Bo'sh bo'lsa — to'g'ridan-to'g'ri.
+      VATAN_PROXY: ${VATAN_PROXY:-}
+    # Konteyner ichidan HOST'dagi WARP proksisiga yetish uchun
+    # (VATAN_PROXY=socks5://host.docker.internal:40000)
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - vatan-data:/data
+      - ./secrets:/secrets:ro
+    expose:
+      - "5057"          # faqat ichki tarmoqda — hostga chiqmaydi
+    networks:
+      - proksi
+    # Boshqa dasturlar (boshqa loyihalar) protsessorsiz
+    # qolmasin — tahlil serverni butunlay egallab olmaydi.
+    cpus: ${VATAN_CPU_LIMIT:-1.5}
+    mem_limit: ${VATAN_RAM_LIMIT:-2500m}
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+  front:
+    # Serverda `caddy:2-alpine` allaqachon bor — yangi image yuklanmaydi.
+    image: caddy:2-alpine
+    container_name: vatan-front
+    restart: unless-stopped
+    volumes:
+      - ../static:/srv:ro                        # index.html
+      - ./config.js:/srv/config.js:ro            # ishlab chiqarish API manzili
+      - ./front.Caddyfile:/etc/caddy/Caddyfile:ro
+    expose:
+      - "80"            # faqat ichki tarmoqda
+    networks:
+      - proksi
+    mem_limit: 128m
+    logging:
+      driver: json-file
+      options: { max-size: "5m", max-file: "2" }
+
+networks:
+  # Mavjud Caddy shu tarmoqda. Nomi .env dagi CADDY_TARMOQ dan olinadi —
+  # ornat.sh uni serverdan avtomatik aniqlaydi.
+  proksi:
+    external: true
+    name: ${CADDY_TARMOQ:?CADDY_TARMOQ aniqlanmagan — ornat.sh ni ishlating}
+
+volumes:
+  vatan-data:      # SQLite: video keshi va seans tarixi

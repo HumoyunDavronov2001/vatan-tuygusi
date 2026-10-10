@@ -1,0 +1,9 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+tarix.db
+*.db
+deploy/.env
+deploy/secrets/
+static/logo.png

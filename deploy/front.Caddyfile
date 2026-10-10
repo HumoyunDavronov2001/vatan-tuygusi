@@ -1,0 +1,28 @@
+# ──────────────────────────────────────────────────────────────────────────
+#  vatan-front konteyneri uchun ICHKI konfiguratsiya.
+#
+#  Bu Caddy TASHQARIGA CHIQMAYDI va SSL bilan ishlamaydi — u shunchaki
+#  statik fayllarni ichki tarmoqda beradi. SSL va domen ishini serverdagi
+#  mavjud `caddy` bajaradi.
+# ──────────────────────────────────────────────────────────────────────────
+
+{
+	admin off
+	auto_https off
+}
+
+:80 {
+	root * /srv
+	encode zstd gzip
+
+	# index.html va config.js keshlanmasin — yangilanish darhol ko'rinsin
+	@yangilanadigan path / /index.html /config.js
+	header @yangilanadigan Cache-Control "no-cache, must-revalidate"
+
+	file_server
+
+	log {
+		output stdout
+		format console
+	}
+}
